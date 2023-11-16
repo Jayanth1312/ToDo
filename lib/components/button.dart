@@ -1,9 +1,11 @@
+// ignore_for_file: sort_child_properties_last
+
 import 'package:flutter/material.dart';
 
 class MyButton extends StatelessWidget {
   final String text;
-  VoidCallback onPressed;
-  MyButton({super.key, required this.text, required this.onPressed});
+  final VoidCallback onPressed;
+  MyButton({Key? key, required this.text, required this.onPressed}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

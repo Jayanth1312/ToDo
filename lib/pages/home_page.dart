@@ -1,10 +1,29 @@
-// ignore_for_file: prefer_const_constructors, use_key_in_widget_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
 import 'package:note_todo/components/dialogue_box.dart';
 import 'package:note_todo/components/todo_tile.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:note_todo/data/data_base.dart';
+import 'package:logger/logger.dart';
+
+void main() async {
+  await Hive.initFlutter();
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'ToDo App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: HomePage(),
+    );
+  }
+}
 
 class HomePage extends StatefulWidget {
   @override
@@ -12,27 +31,36 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
-  // Hive box
   late Box _todoList;
-  // final _todoList = Hive.openBox('todoList');
   ToDoDataBase db = ToDoDataBase();
+  final controller = TextEditingController();
+  final Logger _logger = Logger();
 
   @override
   void initState() {
-    // default data
-    if (_todoList.get("TODOLIST") == null) {
-      db.createInitialData();
-    } else {
-      db.loadData();
-    }
     super.initState();
+    initialize();
   }
 
+  // Create an async method to initialize the Hive box
+  Future<void> initialize() async {
+    try {
+      _todoList = await Hive.openBox('todoList');
 
-  // Text controller
-  final controller = TextEditingController();
-  
-  //checkbox changed
+      // default data
+      if (_todoList.get("TODOLIST") == null) {
+        await db.createInitialData();
+      } else {
+        await db.loadData();
+      }
+
+      // Ensure the UI is updated after data is loaded
+      setState(() {});
+    } catch (e, stackTrace) {
+      _logger.e('Error initializing Hive', e, stackTrace);
+    }
+  }
+
   void checkBoxChanged(bool? value, int index) {
     setState(() {
       db.toDoList[index][1] = !db.toDoList[index][1];
@@ -40,30 +68,28 @@ class HomePageState extends State<HomePage> {
     db.updateData();
   }
 
-  //save new task
-  void saveNewTask() {
+  Future<void> saveNewTask() async {
     setState(() {
       db.toDoList.add([controller.text, false]);
       controller.clear();
     });
     Navigator.pop(context);
-    db.updateData();
+    await db.updateData();
   }
 
-  //add New Task
   void createNewTask() {
     showDialog(
-        context: context,
-        builder: (context) {
-          return DialogueBox(
-            controller: controller,
-            onSave: saveNewTask,
-            onCancel: () => Navigator.pop(context),
-          );
-        }
+      context: context,
+      builder: (context) {
+        return DialogueBox(
+          controller: controller,
+          onSave: saveNewTask,
+          onCancel: () => Navigator.pop(context),
+        );
+      },
     );
   }
-  // delete task
+
   void deleteTask(int index) {
     setState(() {
       db.toDoList.removeAt(index);
@@ -73,6 +99,11 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_todoList == null) {
+      // Loading indicator or placeholder can be shown while data is loading
+      return CircularProgressIndicator();
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: PreferredSize(
@@ -82,7 +113,10 @@ class HomePageState extends State<HomePage> {
           title: Text(
             'TO DO',
             style: TextStyle(
-                color: Colors.black, fontSize: 24, fontWeight: FontWeight.w600),
+              color: Colors.black,
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           bottom: PreferredSize(
             preferredSize: Size.fromHeight(1),

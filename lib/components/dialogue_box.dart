@@ -5,8 +5,8 @@ import 'package:note_todo/components/button.dart';
 
 class DialogueBox extends StatelessWidget {
   final controller;
-  VoidCallback onSave;
-  VoidCallback onCancel;
+  final VoidCallback onSave;
+  final VoidCallback onCancel;
 
   DialogueBox({
     super.key,

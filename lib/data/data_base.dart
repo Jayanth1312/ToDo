@@ -2,22 +2,24 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 class ToDoDataBase {
   List toDoList = []; //list of todos
-  //refrence to the hive box
+  //reference to the hive box
   final todoList = Hive.box('todoList');
 
   //constructor for the first time opening this app
-  void createInitialData() {
+  Future<void> createInitialData() async {
     toDoList = [
       ["Write a story", false],
       ["Read a book", false]
     ];
   }
+
   //load the data from the hive box
-  void loadData() {
+  Future<void> loadData() async {
     toDoList = todoList.get('TODOLIST');
   }
+
   //updating the database
-  void updateData() {
+  Future<void> updateData() async {
     todoList.put('TODOLIST', toDoList);
   }
 }

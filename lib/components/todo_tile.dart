@@ -44,7 +44,7 @@ Function(BuildContext)? deleteFunction;
               Checkbox(
                 value: taskCompleted,
                 onChanged: onChanged,
-                activeColor: Colors.black,
+                activeColor: Colors.blue,
               ),
               //task
               Text(

@@ -4,9 +4,9 @@ import 'package:note_todo/pages/home_page.dart';
 
 void main() async {
   await Hive.initFlutter();
-
   //open a box
-  await Hive.openBox('todoList');
+  var box = await Hive.openBox('todoList');
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
